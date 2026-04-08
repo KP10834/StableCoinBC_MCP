@@ -12,8 +12,12 @@
   },
   "files": [
     "packages/",
-    "commands/"
+    "commands/",
+    "scripts/"
   ],
+  "bin": {
+    "sync-docs": "scripts/sync-docs.mjs"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.12.1",
     "ethers": "6.16.0",
