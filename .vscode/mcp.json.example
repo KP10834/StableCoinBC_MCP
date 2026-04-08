@@ -3,7 +3,7 @@
     "kafka-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/kafka-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/kafka-mcp/index.js"],
       "env": {
         "KAFKA_BROKERS": "localhost:9092"
       }
@@ -11,7 +11,7 @@
     "redis-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/redis-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/redis-mcp/index.js"],
       "env": {
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
@@ -22,7 +22,7 @@
     "sqlite-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/sqlite-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/sqlite-mcp/index.js"],
       "env": {
         "DATA_DIR": "./data"
       }
@@ -30,7 +30,7 @@
     "evm-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/evm-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/evm-mcp/index.js"],
       "env": {
         "EVM_RPC_URL": "http://localhost:8545",
         "RPC_TIMEOUT_MS": "10000"
@@ -39,12 +39,12 @@
     "pm2-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/pm2-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/pm2-mcp/index.js"]
     },
     "error-log-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/stablecoinbc-mcp/packages/error-log-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/error-log-mcp/index.js"]
     }
   }
 }

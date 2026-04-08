@@ -1,5 +1,5 @@
 {
-  "name": "stablecoinbc-mcp",
+  "name": "@stablecointf/mcp-servers",
   "version": "1.0.0",
   "description": "StableCoin 프로젝트 공통 MCP 서버 모음",
   "type": "module",

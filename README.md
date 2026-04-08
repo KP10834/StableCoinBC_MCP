@@ -39,21 +39,21 @@ npm install git+https://github.com/KP10834/StableCoinBC_MCP.git --save-dev
 `.mcp.json.example`을 프로젝트 루트에 `.mcp.json`으로 복사 후 환경에 맞게 수정:
 
 ```bash
-cp node_modules/stablecoinbc-mcp/.mcp.json.example .mcp.json
+cp node_modules/@stablecointf/mcp-servers/.mcp.json.example .mcp.json
 ```
 
 #### VS Code Copilot
 
 ```bash
 mkdir -p .vscode
-cp node_modules/stablecoinbc-mcp/.vscode/mcp.json.example .vscode/mcp.json
+cp node_modules/@stablecointf/mcp-servers/.vscode/mcp.json.example .vscode/mcp.json
 ```
 
 ### 2. Slash Commands 등록 (Claude Code 전용)
 
 ```bash
 mkdir -p .claude/commands
-cp node_modules/stablecoinbc-mcp/commands/*.md .claude/commands/
+cp node_modules/@stablecointf/mcp-servers/commands/*.md .claude/commands/
 ```
 
 ### 3. 의존성 설치
