@@ -17,12 +17,29 @@ function getArg(flag) {
   return idx !== -1 && process.argv[idx + 1] ? process.argv[idx + 1] : null;
 }
 
-const PROJECT_ROOT = resolve(getArg("--project") || process.cwd());
-const HANDLERS_DIR = resolve(PROJECT_ROOT, "src/adapter/in/kafka/handlers");
-const ENV_PATH = resolve(PROJECT_ROOT, "src/infra/config/env.ts");
-const ASYNCAPI_PATH = resolve(
-  getArg("--asyncapi") || resolve(PROJECT_ROOT, "../StableCoinBC_Adapter_Docs/asyncapi.yaml"),
-);
+// 설정 우선순위: CLI 인자 > .sync-docs.json > 기본값
+function loadConfig() {
+  const projectRoot = resolve(getArg("--project") || process.cwd());
+  const configPath = resolve(projectRoot, ".sync-docs.json");
+
+  let fileConfig = {};
+  if (existsSync(configPath)) {
+    fileConfig = JSON.parse(readFileSync(configPath, "utf-8"));
+  }
+
+  return {
+    projectRoot,
+    handlersDir: resolve(projectRoot, fileConfig.handlersDir || "src/adapter/in/kafka/handlers"),
+    envPath: resolve(projectRoot, fileConfig.envPath || "src/infra/config/env.ts"),
+    asyncapiPath: resolve(projectRoot, getArg("--asyncapi") || fileConfig.asyncapiPath || "../StableCoinBC_Adapter_Docs/asyncapi.yaml"),
+  };
+}
+
+const config_ = loadConfig();
+const PROJECT_ROOT = config_.projectRoot;
+const HANDLERS_DIR = config_.handlersDir;
+const ENV_PATH = config_.envPath;
+const ASYNCAPI_PATH = config_.asyncapiPath;
 
 const FIX_MODE = process.argv.includes("--fix");
 
@@ -31,7 +48,7 @@ if (!existsSync(HANDLERS_DIR)) {
   process.exit(1);
 }
 if (!existsSync(ASYNCAPI_PATH)) {
-  console.error(`ERROR: asyncapi.yaml 없음: ${ASYNCAPI_PATH}`);
+  console.error(`ERROR: asyncapi.yaml 없음: ${ASYNCAPI_PATH}\n\n프로젝트 루트에 .sync-docs.json을 생성하세요:\n${JSON.stringify({ asyncapiPath: "../YourDocsRepo/asyncapi.yaml" }, null, 2)}`);
   process.exit(1);
 }
 
