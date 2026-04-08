@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 /**
  * sync-docs: 코드 Zod 스키마와 asyncapi.yaml 비교 및 자동 수정
  *
