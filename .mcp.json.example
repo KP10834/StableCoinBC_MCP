@@ -36,15 +36,41 @@
         "RPC_TIMEOUT_MS": "10000"
       }
     },
-    "pm2-mcp": {
+"elk-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/pm2-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/elk-mcp/index.js"],
+      "env": {
+        "ES_URL": "http://localhost:9200",
+        "ES_API_KEY": "<your-es-api-key>",
+        "ES_INDEX_PATTERN": "logs-*"
+      }
     },
-    "error-log-mcp": {
+    "workflow-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/error-log-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/workflow-mcp/index.js"]
+    },
+    "release-note-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/release-note-mcp/index.js"]
+    },
+    "qa-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/qa-mcp/index.js"]
+    },
+    "cross-impact-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/packages/cross-impact-mcp/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "<your-github-token>",
+        "GITHUB_API_URL": "https://api.github.com",
+        "BASE_BRANCH": "main",
+        "REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\",\"backend\":{\"repo\":\"StableCoinTF/StableCoinBE_Wallet\",\"base\":\"wallet_master\"},\"listener\":\"StableCoinTF/StableCoinBC_Adapter_Listener\",\"docs\":\"StableCoinTF/StableCoinBC_Adapter_Docs\"}"
+      }
     }
   }
 }

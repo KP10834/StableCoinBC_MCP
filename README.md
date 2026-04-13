@@ -11,14 +11,11 @@ Claude Code, VS Code Copilot 등 MCP 지원 AI 도구에서 사용 가능.
 | `redis-mcp` | 키 조회/삭제, 락 상태, TTL | `REDIS_HOST`, `REDIS_PORT`, `REDIS_DB`, `REDIS_PASSWORD`, `REDIS_KEY_PREFIX` |
 | `sqlite-mcp` | DB 테이블/데이터 조회 (읽기 전용) | `DATA_DIR`, `SQLITE_DATABASES` |
 | `evm-mcp` | EVM RPC 호출 (잔액, 논스, 트랜잭션) | `EVM_RPC_URL`, `RPC_TIMEOUT_MS` |
-| `pm2-mcp` | PM2 프로세스 관리/로그 조회 | - |
-| `error-log-mcp` | PM2 에러 로그 검색, 집계, 추이 | - |
 
 ## Slash Commands
 
 | 커맨드 | 용도 |
 |--------|------|
-| `/impact` | git diff 기반 변경 영향 범위 분석 |
 | `/release-note` | Conventional Commits 기반 릴리즈 노트 생성 |
 | `/sync-docs` | 코드와 AsyncAPI 문서 동기화 (자동 수정) |
 
