@@ -12,6 +12,18 @@
 
 > **설정 불필요.** 프로젝트 `.env` 파일에서 Kafka, Redis 등 자동 로드.
 
+### 슬래시 커맨드
+
+`/qa` 슬래시 커맨드로 `qa_test_branch`를 간편하게 실행 가능:
+
+```
+/qa                    → 변경 핸들러만 테스트
+/qa --all              → 전체 회귀 테스트 포함
+/qa --skip-build       → 빌드 건너뛰기
+/qa --base dev         → dev 기준 비교
+/qa --keep-alive       → 테스트 후 서비스 유지
+```
+
 <details>
 <summary>자동 감지 항목</summary>
 

@@ -3,7 +3,7 @@
     "kafka-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/kafka-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/kafka-mcp/index.js"],
       "env": {
         "KAFKA_BROKERS": "localhost:9092"
       }
@@ -11,7 +11,7 @@
     "redis-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/redis-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/redis-mcp/index.js"],
       "env": {
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
@@ -22,7 +22,7 @@
     "sqlite-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/sqlite-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/sqlite-mcp/index.js"],
       "env": {
         "DATA_DIR": "./data"
       }
@@ -30,21 +30,47 @@
     "evm-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/evm-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/evm-mcp/index.js"],
       "env": {
         "EVM_RPC_URL": "http://localhost:8545",
         "RPC_TIMEOUT_MS": "10000"
       }
     },
-    "pm2-mcp": {
+    "elk-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/pm2-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/elk-mcp/index.js"],
+      "env": {
+        "ES_URL": "http://localhost:9200",
+        "ES_API_KEY": "<your-es-api-key>",
+        "ES_INDEX_PATTERN": "logs-*"
+      }
     },
-    "error-log-mcp": {
+    "workflow-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/error-log-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/workflow-mcp/index.js"]
+    },
+    "release-note-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/release-note-mcp/index.js"]
+    },
+    "qa-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/qa-mcp/index.js"]
+    },
+    "cross-impact-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/cross-impact-mcp/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "<your-github-token>",
+        "GITHUB_API_URL": "https://api.github.com",
+        "BASE_BRANCH": "main",
+        "REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\",\"backend\":{\"repo\":\"StableCoinTF/StableCoinBE_Wallet\",\"base\":\"wallet_master\"},\"listener\":\"StableCoinTF/StableCoinBC_Adapter_Listener\",\"docs\":\"StableCoinTF/StableCoinBC_Adapter_Docs\"}"
+      }
     }
   }
 }

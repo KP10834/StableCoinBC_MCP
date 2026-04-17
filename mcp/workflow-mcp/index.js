@@ -329,9 +329,26 @@ server.tool(
     const branchType = branchMatch ? branchMatch[1] : "feat";
     const commitType = type || branchType;
 
-    // 스테이지되지 않은 파일이 있으면 전부 stage
+    // 스테이지되지 않은 파일이 있으면 목록만 표시
     if (diff.ok && diff.output && (!staged.ok || !staged.output)) {
-      exec("git add -A");
+      const unstaged = exec("git diff --name-only");
+      const untracked = exec("git ls-files --others --exclude-standard");
+      const lines = [];
+      lines.push("## 스테이지되지 않은 파일\n");
+      lines.push("커밋할 파일을 먼저 `git add`로 스테이지해주세요.\n");
+      if (unstaged.ok && unstaged.output) {
+        lines.push("### 변경됨 (unstaged)\n");
+        lines.push("```");
+        lines.push(unstaged.output);
+        lines.push("```");
+      }
+      if (untracked.ok && untracked.output) {
+        lines.push("\n### 새 파일 (untracked)\n");
+        lines.push("```");
+        lines.push(untracked.output);
+        lines.push("```");
+      }
+      return { content: [{ type: "text", text: lines.join("\n") }] };
     }
 
     if (message) {

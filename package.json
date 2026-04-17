@@ -11,11 +11,12 @@
     "url": "https://github.com/KP10834/StableCoinBC_MCP.git"
   },
   "files": [
-    "packages/",
+    "mcp/",
     "commands/",
     "scripts/"
   ],
   "bin": {
+    "mcp-setup": "scripts/setup.mjs",
     "sync-docs": "scripts/sync-docs.mjs"
   },
   "dependencies": {

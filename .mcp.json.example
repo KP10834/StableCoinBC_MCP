@@ -3,7 +3,7 @@
     "kafka-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/kafka-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/kafka-mcp/index.js"],
       "env": {
         "KAFKA_BROKERS": "localhost:9092"
       }
@@ -11,7 +11,7 @@
     "redis-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/redis-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/redis-mcp/index.js"],
       "env": {
         "REDIS_HOST": "localhost",
         "REDIS_PORT": "6379",
@@ -22,7 +22,7 @@
     "sqlite-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/sqlite-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/sqlite-mcp/index.js"],
       "env": {
         "DATA_DIR": "./data"
       }
@@ -30,7 +30,7 @@
     "evm-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/evm-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/evm-mcp/index.js"],
       "env": {
         "EVM_RPC_URL": "http://localhost:8545",
         "RPC_TIMEOUT_MS": "10000"
@@ -39,7 +39,7 @@
 "elk-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/elk-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/elk-mcp/index.js"],
       "env": {
         "ES_URL": "http://localhost:9200",
         "ES_API_KEY": "<your-es-api-key>",
@@ -49,27 +49,26 @@
     "workflow-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/workflow-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/workflow-mcp/index.js"]
     },
     "release-note-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/release-note-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/release-note-mcp/index.js"]
     },
     "qa-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/qa-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/qa-mcp/index.js"]
     },
     "cross-impact-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/packages/cross-impact-mcp/index.js"],
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/cross-impact-mcp/index.js"],
       "env": {
         "GITHUB_TOKEN": "<your-github-token>",
         "GITHUB_API_URL": "https://api.github.com",
-        "BASE_BRANCH": "main",
-        "REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\",\"backend\":{\"repo\":\"StableCoinTF/StableCoinBE_Wallet\",\"base\":\"wallet_master\"},\"listener\":\"StableCoinTF/StableCoinBC_Adapter_Listener\",\"docs\":\"StableCoinTF/StableCoinBC_Adapter_Docs\"}"
+        "REPOS": "{\"adapter\":{\"repo\":\"StableCoinTF/StableCoinBC_Adapter\",\"base\":\"dev\"},\"be-wallet\":{\"repo\":\"StableCoinTF/StableCoinBE_Wallet\",\"base\":\"wallet_master\"},\"be-admin\":{\"repo\":\"StableCoinTF/StableCoinBE_Admin\",\"base\":\"master\"},\"be-payment\":{\"repo\":\"StableCoinTF/StableCoinBE_Payment\",\"base\":\"main\"},\"fe-wallet\":{\"repo\":\"StableCoinTF/StableCoinFE_Wallet\",\"base\":\"dev\"},\"fe-admin\":{\"repo\":\"StableCoinTF/StableCoinFE_Admin\",\"base\":\"main\"},\"fe-board\":{\"repo\":\"StableCoinTF/StableCoinFE_Board\",\"base\":\"main\"},\"bc-board\":{\"repo\":\"StableCoinTF/StableCoinBC_Board\",\"base\":\"dev\"},\"bc-node\":{\"repo\":\"StableCoinTF/StableCoinBC_Node\",\"base\":\"main\"},\"listener\":{\"repo\":\"StableCoinTF/StableCoinBC_Adapter_Listener\",\"base\":\"develop\"},\"bundler\":{\"repo\":\"StableCoinTF/StableCoin_Bundler\",\"base\":\"main\"},\"erc4337\":{\"repo\":\"StableCoinTF/StableCoin_ERC4337\",\"base\":\"main\"},\"erc20-forwarding\":{\"repo\":\"StableCoinTF/StableCoin_ERC20_Forwarding\",\"base\":\"master\"},\"create2factory\":{\"repo\":\"StableCoinTF/Create2Factory\",\"base\":\"master\"},\"privacy-evm\":{\"repo\":\"StableCoinTF/StableCoin_Privacy_Subnet_EVM\",\"base\":\"main\"},\"docs\":\"StableCoinTF/StableCoinBC_Adapter_Docs\"}"
       }
     }
   }
