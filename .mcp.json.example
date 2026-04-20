@@ -64,6 +64,11 @@
       "command": "node",
       "args": ["node_modules/@stablecointf/mcp-servers/mcp/qa-mcp/index.js"]
     },
+    "context7": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp"]
+    },
     "cross-impact-mcp": {
       "type": "stdio",
       "command": "node",

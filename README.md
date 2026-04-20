@@ -91,6 +91,22 @@ npx mcp-setup
 
 Claude Code 채팅창에서 자연어로 요청하면 자동으로 해당 MCP 도구를 호출한다.
 
+### 개발 보조
+
+| 서버 | 용도 | 환경변수 | 상세 |
+|------|------|---------|------|
+| `context7` | 라이브러리 최신 공식 문서 조회 (ethers.js, kafkajs, Zod 등) | 없음 | |
+
+**사용 예시:**
+
+```
+"ethers.js v6 AbiCoder.encode 사용법 알려줘"
+"kafkajs producer.transaction() 예시 보여줘"
+"Zod .transform() + .pipe() 조합 패턴 알려줘"
+```
+
+---
+
 ### 인프라 조회
 
 | 서버 | 용도 | 환경변수 | 상세 |

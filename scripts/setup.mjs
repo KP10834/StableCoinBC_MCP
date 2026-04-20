@@ -7,8 +7,8 @@
  *   npx @stablecointf/mcp-servers setup --mcp     # MCP 설정만
  *   npx @stablecointf/mcp-servers setup --commands # 슬래시 커맨드만
  */
-import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, copyFileSync } from "fs";
-import { resolve, dirname } from "path";
+import { readFileSync, writeFileSync, mkdirSync, readdirSync, existsSync, copyFileSync, statSync } from "fs";
+import { resolve, dirname, relative } from "path";
 import { fileURLToPath } from "url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -73,26 +73,39 @@ function setupCommands() {
   const targetDir = resolve(PROJECT_DIR, ".claude", "commands");
   mkdirSync(targetDir, { recursive: true });
 
-  const files = readdirSync(commandsDir).filter((f) => f.endsWith(".md"));
+  copyCommandsRecursive(commandsDir, targetDir, commandsDir);
+}
 
-  for (const file of files) {
-    const src = resolve(commandsDir, file);
-    const dest = resolve(targetDir, file);
-    const srcContent = readFileSync(src, "utf-8");
+function copyCommandsRecursive(srcDir, targetDir, rootDir) {
+  const entries = readdirSync(srcDir);
 
-    if (existsSync(dest)) {
-      const destContent = readFileSync(dest, "utf-8");
-      if (srcContent === destContent) {
-        console.log(`  . ${file} 이미 최신`);
-        continue;
+  for (const entry of entries) {
+    const src = resolve(srcDir, entry);
+    const stat = statSync(src);
+
+    if (stat.isDirectory()) {
+      const subTarget = resolve(targetDir, entry);
+      mkdirSync(subTarget, { recursive: true });
+      copyCommandsRecursive(src, subTarget, rootDir);
+    } else if (entry.endsWith(".md")) {
+      const dest = resolve(targetDir, entry);
+      const relPath = relative(rootDir, src);
+      const srcContent = readFileSync(src, "utf-8");
+
+      if (existsSync(dest)) {
+        const destContent = readFileSync(dest, "utf-8");
+        if (srcContent === destContent) {
+          console.log(`  . ${relPath} 이미 최신`);
+          continue;
+        }
+        copyFileSync(src, dest);
+        console.log(`  ~ ${relPath} 갱신`);
+        changes++;
+      } else {
+        copyFileSync(src, dest);
+        console.log(`  + ${relPath} 추가`);
+        changes++;
       }
-      copyFileSync(src, dest);
-      console.log(`  ~ ${file} 갱신`);
-      changes++;
-    } else {
-      copyFileSync(src, dest);
-      console.log(`  + ${file} 추가`);
-      changes++;
     }
   }
 }
