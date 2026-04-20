@@ -1,0 +1,155 @@
+현재 PR의 변경 코드를 코드 품질 관점에서 리뷰하고 GitHub에 리뷰를 등록해줘.
+모든 출력은 한국어로 작성해.
+
+## 동작
+
+코드 패턴, 설계 품질, 유지보수성에 중점을 둔 리뷰를 수행한다.
+기존 리뷰 코멘트와 중복되지 않는 항목만 등록한다.
+MCP 없이 동작.
+
+## 절차
+
+### 1단계: PR 정보 조회
+
+$ARGUMENTS 파싱:
+- 숫자 또는 `#숫자` → 해당 PR 번호 사용
+- `--approve` → 최종 이벤트를 APPROVE로
+- `--request-changes` → 최종 이벤트를 REQUEST_CHANGES로
+- 인자 없으면 현재 브랜치의 PR 자동 조회
+
+```bash
+gh pr view [<number>] --json number,title,headRefName,baseRefName,headRefOid,url
+gh repo view --json nameWithOwner
+```
+
+### 2단계: 기존 리뷰 코멘트 조회
+
+```bash
+gh api repos/<owner>/<repo>/pulls/<number>/comments \
+  --jq '[.[] | {path: .path, line: .line, body: .body, user: .user.login}]'
+
+gh api repos/<owner>/<repo>/pulls/<number>/reviews \
+  --jq '[.[] | {state: .state, body: .body, user: .user.login}]'
+```
+
+### 3단계: 변경 코드 조회
+
+```bash
+gh pr diff [<number>]
+```
+
+### 4단계: 코드 품질 분석
+
+diff를 분석하여 아래 항목을 검토해:
+
+| 분류 | 검토 내용 |
+|------|----------|
+| 🔴 설계 결함 | 단일 책임 원칙 위반, 과도한 의존성, 순환 참조 |
+| 🔴 코드 중복 | 동일/유사 로직이 2곳 이상 존재, 추상화 가능한 패턴 |
+| 🟡 복잡도 | 과도한 중첩, 긴 함수, 읽기 어려운 조건문 |
+| 🟡 네이밍 | 의도가 불명확한 변수/함수/클래스명 |
+| 🟡 패턴 불일치 | 기존 코드베이스 패턴과 다른 방식 사용 |
+| 🔵 개선 제안 | 더 간결한 구현, 유틸 함수 활용, 타입 강화 |
+| 🔵 테스트 | 테스트 커버리지 부족, 엣지 케이스 누락 |
+
+각 이슈에 대해 파악해:
+- 파일 경로, 라인 번호
+- 심각도: 🔴 CRITICAL / 🟡 WARNING / 🔵 INFO
+- 개선 코드 스니펫 (가능하면 제시)
+
+### 5단계: 중복 제거
+
+2단계 기존 코멘트와 비교하여 이미 지적된 항목 제외.
+
+### 6단계: 결과 표시 및 확인
+
+```
+## 코드 품질 리뷰 결과 — PR #{번호}: {제목}
+
+### 🔴 CRITICAL ({n}건)
+- `src/service/payment.service.ts:42` — 단일 책임 원칙 위반: 검증/변환/저장을 한 함수에서 처리
+
+### 🟡 WARNING ({n}건)
+- `src/handler/withdraw.handler.ts:18` — 중복 로직: getAccount()와 동일한 구현이 account.service.ts:31에 존재
+
+### 🔵 INFO ({n}건)
+- `src/domain/account.port.ts:5` — 네이밍 개선 권장: `getData` → `getAccountByAddress`
+
+---
+신규 등록 예정: {n}건 / 중복 생략: {n}건
+
+PR에 리뷰를 등록할까요? (신규 {n}건)
+1) COMMENT — 코멘트만 달기
+2) REQUEST_CHANGES — 변경 요청
+3) APPROVE — 승인
+4) 취소
+```
+
+### 7단계: GitHub PR에 리뷰 등록
+
+**전체 리뷰 요약 (한국어):**
+
+```
+## 코드 품질 리뷰
+
+{변경 목적 및 전반적인 코드 품질 평가 — 한국어}
+
+### 이슈 현황
+- 🔴 CRITICAL: {n}건
+- 🟡 WARNING: {n}건
+- 🔵 INFO: {n}건
+```
+
+**인라인 코멘트 (한국어):**
+
+```json
+{
+  "path": "src/service/payment.service.ts",
+  "line": 42,
+  "side": "RIGHT",
+  "body": "🔴 **단일 책임 원칙 위반**\n\n검증, 변환, 저장 로직을 분리하는 것을 권장합니다.\n\n```ts\n// 검증은 validator로, 저장은 repository로 위임\nawait this.validator.validate(dto);\nawait this.repository.save(entity);\n```"
+}
+```
+
+```bash
+cat > /tmp/codex_review.json << 'EOF'
+{
+  "commit_id": "<headRefOid>",
+  "body": "<전체_요약_한국어>",
+  "event": "<COMMENT|APPROVE|REQUEST_CHANGES>",
+  "comments": [<신규_인라인_코멘트만>]
+}
+EOF
+
+gh api repos/<owner>/<repo>/pulls/<number>/reviews \
+  --method POST \
+  --input /tmp/codex_review.json
+```
+
+완료 후 출력:
+
+```
+## 코드 품질 리뷰 등록 완료
+
+PR: #{번호} {제목}
+이벤트: {COMMENT|APPROVE|REQUEST_CHANGES}
+신규 인라인 코멘트: {n}건
+중복 생략: {n}건
+URL: {pr_url}
+```
+
+## 오류 처리
+
+| 상황 | 조치 |
+|------|------|
+| PR 없음 | `/workflow pr`로 먼저 PR 생성 안내 |
+| `gh` 미인증 | `gh auth login` 안내 |
+| 기존 코멘트 조회 실패 | 경고 후 중복 제거 없이 진행 여부 확인 |
+| 인라인 코멘트 API 실패 | 전체 리뷰 본문만으로 재시도 |
+
+## 사용 예시
+
+- `/codex:review` — 현재 브랜치 PR 코드 품질 리뷰
+- `/codex:review 42` — PR #42 코드 품질 리뷰
+- `/codex:review --approve` — 리뷰 후 승인
+- `/codex:review --request-changes` — 리뷰 후 변경 요청
