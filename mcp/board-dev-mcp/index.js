@@ -54,15 +54,22 @@ server.tool(
       return { content: [{ type: 'text', text: `ERROR: ${portPath} 이미 존재합니다. topic_key를 확인하세요.` }] };
     }
 
-    mkdirSync(dirname(portPath), { recursive: true });
-    mkdirSync(dirname(servicePath), { recursive: true });
+    try {
+      mkdirSync(dirname(portPath), { recursive: true });
+      mkdirSync(dirname(servicePath), { recursive: true });
 
-    writeFileSync(portPath, generatePortContent(pascal, kebab, reqFields, resFields), 'utf-8');
-    writeFileSync(servicePath, generateServiceContent(pascal, kebab, topic_key), 'utf-8');
-    writeFileSync(handlerPath, generateHandlerContent(pascal, kebab, topic_key, reqFields), 'utf-8');
+      writeFileSync(portPath, generatePortContent(pascal, kebab, reqFields, resFields), 'utf-8');
+      writeFileSync(servicePath, generateServiceContent(pascal, kebab, topic_key), 'utf-8');
+      writeFileSync(handlerPath, generateHandlerContent(pascal, kebab, topic_key, reqFields), 'utf-8');
 
-    writeFileSync(indexPath, updateIndexTs(readFileSync(indexPath, 'utf-8'), pascal, kebab, topic_key), 'utf-8');
-    writeFileSync(envPath, updateEnvTs(readFileSync(envPath, 'utf-8'), topic_key, kebab), 'utf-8');
+      const indexContent = updateIndexTs(readFileSync(indexPath, 'utf-8'), pascal, kebab, topic_key);
+      const envContent = updateEnvTs(readFileSync(envPath, 'utf-8'), topic_key, kebab);
+
+      writeFileSync(indexPath, indexContent, 'utf-8');
+      writeFileSync(envPath, envContent, 'utf-8');
+    } catch (e) {
+      return { content: [{ type: 'text', text: `ERROR: 파일 작업 실패 — ${e.message}` }] };
+    }
 
     return {
       content: [{

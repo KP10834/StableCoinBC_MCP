@@ -41,7 +41,8 @@ export function generateServiceContent(pascal, kebab, topicKey) {
     `export class ${pascal}Service implements ${pascal}UseCase {`,
     `  async handle(req: ${pascal}Request): Promise<${pascal}Result> {`,
     `    logger.info({ requestId: req.requestId }, "${pascal} handle called");`,
-    `    throw new Error("Not implemented");`,
+    `    // TODO: 비즈니스 로직 구현`,
+    `    return {} as ${pascal}Result;`,
     `  }`,
     `}`,
     ``,
@@ -81,41 +82,55 @@ export function generateHandlerContent(pascal, kebab, topicKey, reqFields) {
 export function updateIndexTs(content, pascal, kebab, topicKey) {
   let result = content;
 
-  result = result.replace(
+  const step1 = result.replace(
     `import { ContractUseCase } from "@domain/port/in/contract.port";`,
     `import { ContractUseCase } from "@domain/port/in/contract.port";\nimport { ${pascal}UseCase } from "@domain/port/in/${kebab}.port";`,
   );
+  if (step1 === result) throw new Error(`updateIndexTs: ContractUseCase import 앵커를 찾지 못했습니다.`);
+  result = step1;
 
-  result = result.replace(
+  const step2 = result.replace(
     `import { contractHandler } from "./contract.handler";`,
     `import { contractHandler } from "./contract.handler";\nimport { ${topicKey}Handler } from "./${kebab}.handler";`,
   );
+  if (step2 === result) throw new Error(`updateIndexTs: contractHandler import 앵커를 찾지 못했습니다.`);
+  result = step2;
 
-  result = result.replace(
+  const step3 = result.replace(
     `contractService: ContractUseCase;`,
     `contractService: ContractUseCase;\n  ${topicKey}Service: ${pascal}UseCase;`,
   );
+  if (step3 === result) throw new Error(`updateIndexTs: Services 인터페이스 앵커를 찾지 못했습니다.`);
+  result = step3;
 
-  result = result.replace(
+  const step4 = result.replace(
     `contractHandler(services.contractService, RequestTopics.contractInquiry, ResponseTopics.contractResult)];`,
     `contractHandler(services.contractService, RequestTopics.contractInquiry, ResponseTopics.contractResult),\n    ${topicKey}Handler(services.${topicKey}Service, RequestTopics.${topicKey}, ResponseTopics.${topicKey}Result)];`,
   );
+  if (step4 === result) throw new Error(`updateIndexTs: createHandlerConfigs 배열 앵커를 찾지 못했습니다.`);
+  result = step4;
 
   return result;
 }
 
 export function updateEnvTs(content, topicKey, kebab) {
+  const topicName = kebab.replace(/-/g, '.');
+
   let result = content;
 
-  result = result.replace(
+  const step1 = result.replace(
     `infraInquiry: "adapter.board.infra.request",`,
-    `infraInquiry: "adapter.board.infra.request",\n        ${topicKey}: "adapter.board.${kebab}.request",`,
+    `infraInquiry: "adapter.board.infra.request",\n        ${topicKey}: "adapter.board.${topicName}.request",`,
   );
+  if (step1 === result) throw new Error(`updateEnvTs: request topics 앵커를 찾지 못했습니다.`);
+  result = step1;
 
-  result = result.replace(
+  const step2 = result.replace(
     `infraResult: "adapter.board.infra.result",`,
-    `infraResult: "adapter.board.infra.result",\n        ${topicKey}Result: "adapter.board.${kebab}.result",`,
+    `infraResult: "adapter.board.infra.result",\n        ${topicKey}Result: "adapter.board.${topicName}.result",`,
   );
+  if (step2 === result) throw new Error(`updateEnvTs: response topics 앵커를 찾지 못했습니다.`);
+  result = step2;
 
   return result;
 }

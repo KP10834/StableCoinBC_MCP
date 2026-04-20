@@ -8,6 +8,8 @@ import {
   generatePortContent,
   generateServiceContent,
   generateHandlerContent,
+  updateIndexTs,
+  updateEnvTs,
 } from '../mcp/board-dev-mcp/generator.js';
 
 test('toPascalCase', () => {
@@ -45,7 +47,7 @@ test('generateServiceContent - 기본 구조 확인', () => {
   const content = generateServiceContent('NetworkInquiry', 'network-inquiry', 'networkInquiry');
   assert.ok(content.includes('import { NetworkInquiryRequest, NetworkInquiryResult, NetworkInquiryUseCase }'));
   assert.ok(content.includes('export class NetworkInquiryService implements NetworkInquiryUseCase'));
-  assert.ok(content.includes('throw new Error("Not implemented")'));
+  assert.ok(content.includes('// TODO: 비즈니스 로직 구현'));
 });
 
 test('generateHandlerContent - zod schema 확인', () => {
@@ -58,4 +60,42 @@ test('generateHandlerContent - zod schema 확인', () => {
   assert.ok(content.includes('requestId: z.string()'));
   assert.ok(content.includes('chainId: z.string()'));
   assert.ok(content.includes('export function networkInquiryHandler('));
+});
+
+test('updateIndexTs - 4개 앵커 모두 치환됨', () => {
+  const fakeIndexTs = `import { ContractUseCase } from "@domain/port/in/contract.port";
+import { MessagePublisherPort } from "@domain/port/out/message-publisher.port";
+import { contractHandler } from "./contract.handler";
+import { HandlerConfig, registerHandler } from "./register";
+
+export interface Services {
+  contractService: ContractUseCase;
+}
+
+function createHandlerConfigs(services: Services): HandlerConfig<any, any>[] {
+  return [contractHandler(services.contractService, RequestTopics.contractInquiry, ResponseTopics.contractResult)];
+}`;
+
+  const result = updateIndexTs(fakeIndexTs, 'NetworkInquiry', 'network-inquiry', 'networkInquiry');
+  assert.ok(result.includes('import { NetworkInquiryUseCase }'));
+  assert.ok(result.includes('import { networkInquiryHandler }'));
+  assert.ok(result.includes('networkInquiryService: NetworkInquiryUseCase;'));
+  assert.ok(result.includes('networkInquiryHandler(services.networkInquiryService'));
+});
+
+test('updateIndexTs - 앵커 없으면 throw', () => {
+  assert.throws(() => updateIndexTs('bad content', 'NetworkInquiry', 'network-inquiry', 'networkInquiry'), /앵커/);
+});
+
+test('updateEnvTs - 토픽명 하이픈→점 변환', () => {
+  const fakeEnvTs = `      request: {
+        infraInquiry: "adapter.board.infra.request",
+      },
+      response: {
+        infraResult: "adapter.board.infra.result",
+      },`;
+
+  const result = updateEnvTs(fakeEnvTs, 'networkInquiry', 'network-inquiry');
+  assert.ok(result.includes('networkInquiry: "adapter.board.network.inquiry.request"'));
+  assert.ok(result.includes('networkInquiryResult: "adapter.board.network.inquiry.result"'));
 });
