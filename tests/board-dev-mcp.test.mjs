@@ -10,6 +10,9 @@ import {
   generateHandlerContent,
   updateIndexTs,
   updateEnvTs,
+  solidityToTs,
+  extractPortMethods,
+  diffAbiVsPort,
 } from '../mcp/board-dev-mcp/generator.js';
 
 test('toPascalCase', () => {
@@ -98,4 +101,41 @@ test('updateEnvTs - 토픽명 하이픈→점 변환', () => {
   const result = updateEnvTs(fakeEnvTs, 'networkInquiry', 'network-inquiry');
   assert.ok(result.includes('networkInquiry: "adapter.board.network.inquiry.request"'));
   assert.ok(result.includes('networkInquiryResult: "adapter.board.network.inquiry.result"'));
+});
+
+test('solidityToTs - 기본 타입 매핑', () => {
+  assert.equal(solidityToTs('bool'), 'boolean');
+  assert.equal(solidityToTs('uint256'), 'string');
+  assert.equal(solidityToTs('address'), 'string');
+  assert.equal(solidityToTs('bytes32'), 'string');
+  assert.equal(solidityToTs('string'), 'string');
+  assert.equal(solidityToTs('tuple'), 'unknown');
+  assert.equal(solidityToTs('uint256[]'), 'unknown');
+});
+
+test('extractPortMethods - 메서드명 추출', () => {
+  const portContent = `
+export interface ChainReaderPort {
+  getBlock(blockTag: string, includeTransactions?: boolean): Promise<Record<string, unknown> | null>;
+  ethCall(to: string, data: string, blockTag?: string): Promise<string>;
+  getBalance(address: string, blockTag?: string): Promise<string>;
+}
+  `;
+  const methods = extractPortMethods(portContent);
+  assert.ok(methods.has('getBlock'));
+  assert.ok(methods.has('ethCall'));
+  assert.ok(methods.has('getBalance'));
+  assert.equal(methods.size, 3);
+});
+
+test('diffAbiVsPort - 누락 메서드 감지', () => {
+  const abiFunctions = [
+    { name: 'getBlock', inputs: [{ name: 'blockTag', type: 'string' }], outputs: [{ type: 'string' }] },
+    { name: 'getCode', inputs: [{ name: 'address', type: 'address' }], outputs: [{ type: 'bytes' }] },
+  ];
+  const portMethods = new Set(['getBlock']);
+  const result = diffAbiVsPort(abiFunctions, portMethods);
+  assert.equal(result.missing.length, 1);
+  assert.equal(result.missing[0].name, 'getCode');
+  assert.equal(result.present.length, 1);
 });

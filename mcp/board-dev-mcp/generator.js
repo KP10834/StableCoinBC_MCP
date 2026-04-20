@@ -113,6 +113,63 @@ export function updateIndexTs(content, pascal, kebab, topicKey) {
   return result;
 }
 
+export function solidityToTs(type) {
+  if (type === 'bool') return 'boolean';
+  if (type.includes('[]') || type === 'tuple') return 'unknown';
+  if (
+    type.startsWith('uint') || type.startsWith('int') ||
+    type === 'address' || type.startsWith('bytes') || type === 'string'
+  ) return 'string';
+  return 'unknown';
+}
+
+export function extractPortMethods(portContent) {
+  const methods = new Set();
+  const regex = /^\s{2}(\w+)\s*\(/gm;
+  let match;
+  while ((match = regex.exec(portContent)) !== null) {
+    methods.add(match[1]);
+  }
+  return methods;
+}
+
+export function diffAbiVsPort(abiFunctions, portMethods) {
+  const missing = [];
+  const present = [];
+  for (const fn of abiFunctions) {
+    if (portMethods.has(fn.name)) {
+      present.push(fn);
+    } else {
+      missing.push(fn);
+    }
+  }
+  return { missing, present };
+}
+
+export function generateMethodSnippet(fn) {
+  const params = fn.inputs.map((i) => `${i.name || '_'}: ${solidityToTs(i.type)}`).join(', ');
+  const retType = fn.outputs.length === 0
+    ? 'void'
+    : fn.outputs.length === 1
+      ? solidityToTs(fn.outputs[0].type)
+      : `[${fn.outputs.map((o) => solidityToTs(o.type)).join(', ')}]`;
+
+  const portMethod = `  ${fn.name}(${params}): Promise<${retType}>;`;
+  const adapterMethod = [
+    `  async ${fn.name}(${params}): Promise<${retType}> {`,
+    `    try {`,
+    `      const result = await this.provider.send("${fn.name}", [${fn.inputs.map((i) => i.name || '_').join(', ')}]);`,
+    `      return result as ${retType};`,
+    `    } catch (error) {`,
+    `      const code = resolveRpcErrorCode(error);`,
+    `      throw wrapInfraError(error, code);`,
+    `    }`,
+    `  }`,
+  ].join('\n');
+
+  return { portMethod, adapterMethod };
+}
+
 export function updateEnvTs(content, topicKey, kebab) {
   const topicName = kebab.replace(/-/g, '.');
 

@@ -12,6 +12,9 @@ import {
   generateHandlerContent,
   updateIndexTs,
   updateEnvTs,
+  extractPortMethods,
+  diffAbiVsPort,
+  generateMethodSnippet,
 } from './generator.js';
 
 const BOARD_DIR = process.env.BOARD_DIR || '';
@@ -91,6 +94,70 @@ server.tool(
         ].join('\n'),
       }],
     };
+  },
+);
+
+server.tool(
+  'board_check_abi',
+  'ABI JSON과 ChainReaderPort 비교 — 누락/변경된 메서드 및 구현 스니펫 제안',
+  {
+    abi_path: z.string().describe('ABI JSON 파일 절대 경로 (StableCoin_ERC4337 레포 내)'),
+    board_dir: z.string().optional().describe('StableCoinBC_Adapter_Board 절대 경로 (기본: BOARD_DIR env)'),
+  },
+  async ({ abi_path, board_dir }) => {
+    const dir = board_dir || BOARD_DIR;
+    if (!dir) {
+      return { content: [{ type: 'text', text: 'ERROR: board_dir 또는 BOARD_DIR 환경변수가 필요합니다.' }] };
+    }
+
+    let abiJson;
+    try {
+      abiJson = JSON.parse(readFileSync(abi_path, 'utf-8'));
+    } catch (e) {
+      return { content: [{ type: 'text', text: `ERROR: ABI 파일을 읽을 수 없습니다: ${e.message}` }] };
+    }
+
+    let portContent;
+    try {
+      const portPath = resolve(dir, 'src/domain/port/out/chain-reader.port.ts');
+      portContent = readFileSync(portPath, 'utf-8');
+    } catch (e) {
+      return { content: [{ type: 'text', text: `ERROR: chain-reader.port.ts를 읽을 수 없습니다: ${e.message}` }] };
+    }
+
+    const abiFunctions = abiJson.filter((e) => e.type === 'function');
+    const portMethods = extractPortMethods(portContent);
+    const { missing, present } = diffAbiVsPort(abiFunctions, portMethods);
+
+    const portMethodNames = new Set(abiFunctions.map((f) => f.name));
+    const removed = [...portMethods].filter((m) => !portMethodNames.has(m));
+
+    const lines = ['## ABI ↔ ChainReaderPort 분석 결과\n'];
+    lines.push(`- ABI 함수: ${abiFunctions.length}개`);
+    lines.push(`- 포트 메서드: ${portMethods.size}개\n`);
+
+    if (missing.length === 0) {
+      lines.push('### ✅ 누락된 메서드 없음');
+    } else {
+      lines.push(`### ❌ 누락된 메서드 (${missing.length}개) — 추가 필요\n`);
+      for (const fn of missing) {
+        const { portMethod, adapterMethod } = generateMethodSnippet(fn);
+        lines.push(`#### \`${fn.name}\``);
+        lines.push('\n**ChainReaderPort 추가:**\n```ts');
+        lines.push(portMethod);
+        lines.push('```\n');
+        lines.push('**EthersChainReaderAdapter 구현:**\n```ts');
+        lines.push(adapterMethod);
+        lines.push('```\n');
+      }
+    }
+
+    if (removed.length > 0) {
+      lines.push(`\n### ⚠️ ABI에 없는 포트 메서드 (${removed.length}개) — 참고용`);
+      removed.forEach((m) => lines.push(`- \`${m}\``));
+    }
+
+    return { content: [{ type: 'text', text: lines.join('\n') }] };
   },
 );
 
