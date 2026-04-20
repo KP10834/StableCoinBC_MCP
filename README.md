@@ -5,7 +5,7 @@ StableCoin 프로젝트 공통 MCP 서버 및 AI Slash Command 모음.
 ## 구조
 
 ```
-mcp/               ← MCP 서버 (Claude Code, VS Code Copilot, Cursor 등)
+mcp/               ← MCP 서버
 commands/          ← Slash Commands (Claude Code 전용)
 docs/mcp/          ← MCP 서버별 상세 문서
 scripts/           ← CLI 스크립트
@@ -32,15 +32,6 @@ npx mcp-setup --commands   # 슬래시 커맨드만
 
 ## MCP 서버
 
-MCP 프로토콜을 지원하는 AI 도구에서 사용 가능.
-
-| AI 도구 | 지원 |
-|---------|:----:|
-| Claude Code | O |
-| VS Code Copilot | O |
-| Cursor | O |
-| Windsurf | O |
-
 ### 서버 목록
 
 #### 인프라 조회
@@ -60,25 +51,17 @@ MCP 프로토콜을 지원하는 AI 도구에서 사용 가능.
 | `workflow-mcp` | 이슈→브랜치→커밋→PR 워크플로우 | `GITHUB_REPO` | [docs](docs/mcp/workflow-mcp.md) |
 | `qa-mcp` | 브랜치 자동 테스트 (빌드→실행→Kafka 테스트) | 프로젝트 `.env` 자동 로드 | [docs](docs/mcp/qa-mcp.md) |
 | `cross-impact-mcp` | 멀티 레포 변경 영향 분석 (GitHub API) | `GITHUB_TOKEN`, `REPOS` | [docs](docs/mcp/cross-impact-mcp.md) |
+| `topic-gen-mcp` | Kafka 토픽 스켈레톤 생성, ABI↔ChainReader 동기화 | `BOARD_DIR` | [docs](docs/mcp/topic-gen-mcp.md) |
 
 ### 설정
-
-#### Claude Code
 
 ```bash
 cp node_modules/@stablecointf/mcp-servers/.mcp.json.example .mcp.json
 ```
 
-#### VS Code Copilot
-
-```bash
-mkdir -p .vscode
-cp node_modules/@stablecointf/mcp-servers/.vscode/mcp.json.example .vscode/mcp.json
-```
-
 #### 환경변수 수정
 
-`.mcp.json` (또는 `.vscode/mcp.json`)의 `env` 값을 프로젝트 환경에 맞게 변경:
+`.mcp.json`의 `env` 값을 프로젝트 환경에 맞게 변경:
 
 ```json
 {
@@ -112,15 +95,6 @@ cp node_modules/@stablecointf/mcp-servers/.vscode/mcp.json.example .vscode/mcp.j
 
 ## Slash Commands
 
-Claude Code 전용. MCP 서버의 도구들을 정형화된 워크플로우로 감싸서 한 줄로 실행.
-
-| AI 도구 | 지원 |
-|---------|:----:|
-| Claude Code | O |
-| VS Code Copilot | X |
-| Cursor | X |
-| Windsurf | X |
-
 ### 커맨드 목록
 
 | 커맨드 | MCP 서버 | 용도 |
@@ -141,3 +115,118 @@ cp node_modules/@stablecointf/mcp-servers/commands/*.md .claude/commands/
 ```
 
 > MCP 서버만 사용하는 경우 이 단계는 생략 가능.
+
+---
+
+## 사용 예시
+
+### 개발 워크플로우
+
+새 기능 작업부터 PR까지 한 흐름:
+
+```
+/workflow create 출금 수수료 계산 로직 추가 --type feat
+  → GitHub 이슈 생성 + 브랜치 생성 + 자동 체크아웃
+
+... 코드 작업 ...
+
+/workflow commit
+  → 변경사항 분석 후 Conventional Commits 형식 커밋 메시지 제안
+
+/workflow pr
+  → push + PR 생성 (이슈 자동 연결)
+```
+
+### 브랜치 자동 테스트
+
+```
+/qa
+  → 현재 브랜치의 변경 핸들러만 자동 감지 후 테스트
+
+/qa --all
+  → 전체 핸들러 회귀 테스트
+
+/qa --skip-build
+  → 빌드 생략하고 테스트만
+```
+
+### 멀티 레포 영향 분석
+
+```
+/impact adapter feature/new-payment-field
+  → adapter 레포의 해당 브랜치가 다른 레포에 미치는 영향 분석
+  → CRITICAL / WARNING / INFO 심각도로 분류
+
+/impact
+  → 등록된 레포 목록 표시 후 선택
+```
+
+### 릴리즈 노트 생성
+
+```
+/release-note
+  → 최근 태그부터 HEAD까지 자동 생성
+
+/release-note v1.0.0
+  → v1.0.0부터 HEAD까지
+
+/release-note v1.0.0..v1.1.0
+  → 특정 범위
+
+/release-note tags
+  → 태그 목록 조회
+```
+
+### 코드 품질
+
+```
+/lint-fix
+  → ESLint 자동 수정 + tsc 타입 에러 분석 및 수정
+
+/refactor
+  → 변경 코드 리팩토링 제안 (중복/책임분리/네이밍 등) 후 승인 시 적용
+
+/refactor --base main
+  → main 기준으로 비교
+```
+
+### AsyncAPI 문서 동기화
+
+```
+/sync-docs
+  → 코드 Zod 스키마와 asyncapi.yaml 불일치 감지 → 확인 → 수정
+  → Docs 레포 없으면 자동 클론 → validate → Studio 미리보기 → commit/push/PR
+```
+
+`package.json` 설정 필요:
+
+```json
+{
+  "syncDocs": {
+    "docsRepo": "StableCoinTF/StableCoinBC_Adapter_Docs",
+    "asyncapiPath": "../StableCoinBC_Adapter_Docs/asyncapi.yaml"
+  }
+}
+```
+
+### Kafka 토픽 스켈레톤 생성
+
+Claude에게 직접 요청:
+
+```
+"networkInquiry 토픽 스켈레톤 만들어줘"
+→ topic_gen 도구 호출
+→ port/service/handler 파일 생성 + index.ts, env.ts 자동 수정
+```
+
+### 인프라 조회
+
+Claude에게 자연어로 요청:
+
+```
+"adapter.payment.request 토픽 최근 메시지 보여줘"  → kafka-mcp
+"bc-adapter:nonce:* 패턴 키 조회해줘"             → redis-mcp
+"payment 테이블 최근 10건 보여줘"                  → sqlite-mcp
+"0xABC... 주소 잔액 확인해줘"                      → evm-mcp
+"오늘 withdraw 서비스 에러 로그 검색해줘"           → elk-mcp
+```

@@ -45,26 +45,6 @@ function setupMcp() {
     }
   }
 
-  // VS Code: .vscode/mcp.json
-  const vscodeExample = resolve(PKG_ROOT, ".vscode/mcp.json.example");
-  const vscodeDir = resolve(PROJECT_DIR, ".vscode");
-  const vscodeTarget = resolve(vscodeDir, "mcp.json");
-
-  if (existsSync(vscodeDir)) {
-    if (!existsSync(vscodeTarget)) {
-      copyFileSync(vscodeExample, vscodeTarget);
-      console.log("  + .vscode/mcp.json 생성");
-      changes++;
-    } else {
-      const migrated = migrateMcpPaths(vscodeTarget);
-      if (migrated) {
-        console.log("  ~ .vscode/mcp.json 경로 갱신 (packages/ → mcp/)");
-        changes++;
-      } else {
-        console.log("  . .vscode/mcp.json 이미 최신");
-      }
-    }
-  }
 }
 
 function migrateMcpPaths(filePath) {
