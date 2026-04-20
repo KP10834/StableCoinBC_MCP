@@ -5,6 +5,7 @@
 
 코드 패턴, 설계 품질, 유지보수성에 중점을 둔 리뷰를 수행한다.
 기존 리뷰 코멘트와 중복되지 않는 항목만 등록한다.
+모든 코멘트에는 반드시 개선방안을 포함한다.
 MCP 없이 동작.
 
 ## 절차
@@ -21,6 +22,8 @@ $ARGUMENTS 파싱:
 gh pr view [<number>] --json number,title,headRefName,baseRefName,headRefOid,url
 gh repo view --json nameWithOwner
 ```
+
+PR이 없으면 "`/workflow pr`로 먼저 PR을 생성하세요" 안내 후 종료.
 
 ### 2단계: 기존 리뷰 코멘트 조회
 
@@ -45,35 +48,31 @@ diff를 분석하여 아래 항목을 검토해:
 | 분류 | 검토 내용 |
 |------|----------|
 | 🔴 설계 결함 | 단일 책임 원칙 위반, 과도한 의존성, 순환 참조 |
-| 🔴 코드 중복 | 동일/유사 로직이 2곳 이상 존재, 추상화 가능한 패턴 |
+| 🔴 코드 중복 | 동일/유사 로직 2곳 이상, 추상화 가능한 패턴 |
 | 🟡 복잡도 | 과도한 중첩, 긴 함수, 읽기 어려운 조건문 |
 | 🟡 네이밍 | 의도가 불명확한 변수/함수/클래스명 |
 | 🟡 패턴 불일치 | 기존 코드베이스 패턴과 다른 방식 사용 |
 | 🔵 개선 제안 | 더 간결한 구현, 유틸 함수 활용, 타입 강화 |
 | 🔵 테스트 | 테스트 커버리지 부족, 엣지 케이스 누락 |
 
-각 이슈에 대해 파악해:
-- 파일 경로, 라인 번호
-- 심각도: 🔴 CRITICAL / 🟡 WARNING / 🔵 INFO
-- 개선 코드 스니펫 (가능하면 제시)
-
 ### 5단계: 중복 제거
 
 2단계 기존 코멘트와 비교하여 이미 지적된 항목 제외.
 
-### 6단계: 결과 표시 및 확인
+### 6단계: 결과 표시
 
 ```
 ## 코드 품질 리뷰 결과 — PR #{번호}: {제목}
 
 ### 🔴 CRITICAL ({n}건)
-- `src/service/payment.service.ts:42` — 단일 책임 원칙 위반: 검증/변환/저장을 한 함수에서 처리
+- `src/service/payment.service.ts:42` — 단일 책임 원칙 위반
 
 ### 🟡 WARNING ({n}건)
-- `src/handler/withdraw.handler.ts:18` — 중복 로직: getAccount()와 동일한 구현이 account.service.ts:31에 존재
+- `src/handler/withdraw.handler.ts:18` — 중복 로직 발견
+- `src/handler/account.handler.ts:31` — ~~복잡도 이슈~~ (기존 코멘트 있음 — 생략)
 
 ### 🔵 INFO ({n}건)
-- `src/domain/account.port.ts:5` — 네이밍 개선 권장: `getData` → `getAccountByAddress`
+- `src/domain/account.port.ts:5` — 네이밍 개선 권장
 
 ---
 신규 등록 예정: {n}건 / 중복 생략: {n}건
@@ -85,14 +84,16 @@ PR에 리뷰를 등록할까요? (신규 {n}건)
 4) 취소
 ```
 
+`--approve` / `--request-changes` 플래그가 있으면 해당 이벤트로 바로 확인.
+
 ### 7단계: GitHub PR에 리뷰 등록
 
-**전체 리뷰 요약 (한국어):**
+**전체 리뷰 요약 본문:**
 
 ```
 ## 코드 품질 리뷰
 
-{변경 목적 및 전반적인 코드 품질 평가 — 한국어}
+{변경 목적 파악 및 코드 품질 전반 평가}
 
 ### 이슈 현황
 - 🔴 CRITICAL: {n}건
@@ -100,22 +101,26 @@ PR에 리뷰를 등록할까요? (신규 {n}건)
 - 🔵 INFO: {n}건
 ```
 
-**인라인 코멘트 (한국어):**
+**인라인 코멘트 형식 — 모든 코멘트에 개선방안 필수:**
 
-```json
-{
-  "path": "src/service/payment.service.ts",
-  "line": 42,
-  "side": "RIGHT",
-  "body": "🔴 **단일 책임 원칙 위반**\n\n검증, 변환, 저장 로직을 분리하는 것을 권장합니다.\n\n```ts\n// 검증은 validator로, 저장은 repository로 위임\nawait this.validator.validate(dto);\nawait this.repository.save(entity);\n```"
-}
 ```
+{심각도 이모지} **{이슈 제목}**
+
+**문제:** {무엇이 왜 문제인지 설명}
+
+**개선방안:**
+\`\`\`ts
+// 수정 예시 코드
+\`\`\`
+```
+
+**GitHub API 호출:**
 
 ```bash
 cat > /tmp/codex_review.json << 'EOF'
 {
   "commit_id": "<headRefOid>",
-  "body": "<전체_요약_한국어>",
+  "body": "<전체_요약>",
   "event": "<COMMENT|APPROVE|REQUEST_CHANGES>",
   "comments": [<신규_인라인_코멘트만>]
 }
@@ -126,7 +131,7 @@ gh api repos/<owner>/<repo>/pulls/<number>/reviews \
   --input /tmp/codex_review.json
 ```
 
-완료 후 출력:
+**완료 출력:**
 
 ```
 ## 코드 품질 리뷰 등록 완료
@@ -146,6 +151,7 @@ URL: {pr_url}
 | `gh` 미인증 | `gh auth login` 안내 |
 | 기존 코멘트 조회 실패 | 경고 후 중복 제거 없이 진행 여부 확인 |
 | 인라인 코멘트 API 실패 | 전체 리뷰 본문만으로 재시도 |
+| diff 없음 | "변경된 코드가 없습니다" 안내 후 종료 |
 
 ## 사용 예시
 

@@ -5,6 +5,7 @@
 
 OWASP Top 10 및 블록체인/금융 서비스 보안 항목에 중점을 둔 리뷰를 수행한다.
 기존 리뷰 코멘트와 중복되지 않는 항목만 등록한다.
+모든 코멘트에는 반드시 개선방안을 포함한다.
 MCP 없이 동작.
 
 ## 절차
@@ -21,6 +22,8 @@ $ARGUMENTS 파싱:
 gh pr view [<number>] --json number,title,headRefName,baseRefName,headRefOid,url
 gh repo view --json nameWithOwner
 ```
+
+PR이 없으면 "`/workflow pr`로 먼저 PR을 생성하세요" 안내 후 종료.
 
 ### 2단계: 기존 리뷰 코멘트 조회
 
@@ -54,29 +57,30 @@ diff를 분석하여 아래 항목을 검토해:
 | 🔵 의존성 | 알려진 취약점이 있는 패키지 버전 사용 |
 | 🔵 로깅 | 보안 이벤트 미기록, 과도한 민감 정보 로깅 |
 
-각 이슈에 대해 파악해:
-- 파일 경로, 라인 번호
-- 심각도: 🔴 CRITICAL / 🟡 WARNING / 🔵 INFO
-- 취약점 유형 및 공격 시나리오
-- 수정 방법
+CRITICAL 이슈가 발견되면 결과 최상단에 아래 경고를 추가해:
+
+```
+⚠️ 보안 취약점이 발견되었습니다. REQUEST_CHANGES를 권장합니다.
+```
 
 ### 5단계: 중복 제거
 
 2단계 기존 코멘트와 비교하여 이미 지적된 항목 제외.
 
-### 6단계: 결과 표시 및 확인
+### 6단계: 결과 표시
 
 ```
 ## 보안 리뷰 결과 — PR #{번호}: {제목}
 
 ### 🔴 CRITICAL ({n}건)
-- `src/service/withdraw.service.ts:55` — 개인키 로그 노출: logger.info()에 privateKey 포함
+- `src/service/withdraw.service.ts:55` — 개인키 로그 노출
 
 ### 🟡 WARNING ({n}건)
-- `src/handler/payment.handler.ts:22` — 입력 검증 누락: amount 음수 허용 가능
+- `src/handler/payment.handler.ts:22` — 입력 검증 누락
+- `src/handler/account.handler.ts:10` — ~~인증 이슈~~ (기존 코멘트 있음 — 생략)
 
 ### 🔵 INFO ({n}건)
-- `src/infra/config/env.ts:8` — API 키 환경변수 기본값 하드코딩 제거 권장
+- `src/infra/config/env.ts:8` — API 키 기본값 하드코딩 제거 권장
 
 ---
 신규 등록 예정: {n}건 / 중복 생략: {n}건
@@ -88,41 +92,43 @@ PR에 리뷰를 등록할까요? (신규 {n}건)
 4) 취소
 ```
 
-보안 CRITICAL 이슈가 있으면 "보안 취약점이 발견되었습니다. REQUEST_CHANGES를 권장합니다" 라고 강조해줘.
+`--approve` / `--request-changes` 플래그가 있으면 해당 이벤트로 바로 확인.
 
 ### 7단계: GitHub PR에 리뷰 등록
 
-**전체 리뷰 요약 (한국어):**
+**전체 리뷰 요약 본문:**
 
 ```
 ## 보안 리뷰
 
-{변경 목적 파악 및 보안 관점 전반 평가 — 한국어}
+{변경 목적 파악 및 보안 관점 전반 평가}
 
-### 보안 이슈 현황
+### 이슈 현황
 - 🔴 CRITICAL: {n}건
 - 🟡 WARNING: {n}건
 - 🔵 INFO: {n}건
-
-{이슈 없으면: "보안 취약점 없음. 안전한 코드입니다."}
 ```
 
-**인라인 코멘트 (한국어):**
+**인라인 코멘트 형식 — 모든 코멘트에 개선방안 필수:**
 
-```json
-{
-  "path": "src/service/withdraw.service.ts",
-  "line": 55,
-  "side": "RIGHT",
-  "body": "🔴 **민감 정보 로그 노출**\n\n`privateKey`가 로그에 출력되고 있습니다. 공격자가 로그에 접근하면 자산 탈취가 가능합니다.\n\n```ts\n// 수정 전\nlogger.info('처리 완료', { privateKey, txHash });\n\n// 수정 후\nlogger.info('처리 완료', { txHash });  // 민감 정보 제외\n```"
-}
 ```
+{심각도 이모지} **{이슈 제목}**
+
+**문제:** {무엇이 왜 문제인지 + 공격 시나리오 설명}
+
+**개선방안:**
+\`\`\`ts
+// 수정 예시 코드
+\`\`\`
+```
+
+**GitHub API 호출:**
 
 ```bash
 cat > /tmp/security_review.json << 'EOF'
 {
   "commit_id": "<headRefOid>",
-  "body": "<전체_요약_한국어>",
+  "body": "<전체_요약>",
   "event": "<COMMENT|APPROVE|REQUEST_CHANGES>",
   "comments": [<신규_인라인_코멘트만>]
 }
@@ -133,7 +139,7 @@ gh api repos/<owner>/<repo>/pulls/<number>/reviews \
   --input /tmp/security_review.json
 ```
 
-완료 후 출력:
+**완료 출력:**
 
 ```
 ## 보안 리뷰 등록 완료
@@ -153,6 +159,7 @@ URL: {pr_url}
 | `gh` 미인증 | `gh auth login` 안내 |
 | 기존 코멘트 조회 실패 | 경고 후 중복 제거 없이 진행 여부 확인 |
 | 인라인 코멘트 API 실패 | 전체 리뷰 본문만으로 재시도 |
+| diff 없음 | "변경된 코드가 없습니다" 안내 후 종료 |
 
 ## 사용 예시
 
