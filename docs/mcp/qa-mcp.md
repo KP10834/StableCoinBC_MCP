@@ -96,6 +96,22 @@
 
 ```
 "핸들러 목록 보여줘"
+"어떤 핸들러들 있어?"
+```
+
+파라미터 없음.
+
+**출력 예시:**
+
+```
+## 핸들러 목록 (4개)
+
+| 핸들러 | 토픽 | 필드 수 |
+|--------|------|---------|
+| payment | adapter.payment.request | 8 |
+| withdraw | adapter.withdraw.request | 6 |
+| account-create | adapter.account.create | 4 |
+| balance | adapter.balance.inquiry | 3 |
 ```
 
 ---
@@ -106,11 +122,38 @@
 
 ```
 "payment 스키마 분석해줘"
+"withdraw 핸들러 테스트 메시지 어떻게 생성돼?"
 ```
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|---------|------|:----:|------|
-| `handler` | string | O | 핸들러 이름 (예: `payment`, `account-create`) |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|:----:|--------|------|
+| `handler` | string | O | | 핸들러 이름 (예: `payment`, `account-create`) |
+
+**출력 예시:**
+
+```
+## payment 핸들러 분석
+
+토픽: adapter.payment.request → adapter.payment.result
+
+### 스키마
+| 필드 | 타입 | 필수 | nullable |
+|------|------|:----:|:--------:|
+| requestId | string | O | |
+| fromAddress | string | O | |
+| toAddress | string | O | |
+| amount | string | O | |
+| chainId | string | O | |
+
+### 자동 생성 테스트 메시지
+{
+  "requestId": "qa-test-1713000000000",
+  "fromAddress": "0x1111...1111",
+  "toAddress": "0x2222...2222",
+  "amount": "1000",
+  "chainId": "1"
+}
+```
 
 ---
 

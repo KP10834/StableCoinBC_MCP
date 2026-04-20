@@ -64,19 +64,30 @@
 "계정 중복 체크 기능 이슈 만들고 작업 시작해줘"
 ```
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|---------|------|:----:|------|
-| `title` | string | O | 이슈 제목 |
-| `body` | string | | 이슈 본문 |
-| `type` | string | | 작업 유형 (feat, fix, refactor, docs, chore, test. 기본: feat) |
-| `labels` | string | | 라벨 (콤마 구분) |
-| `base` | string | | 분기 기준 브랜치 (생략 시 자동 감지 후 확인) |
-| `confirmed` | boolean | | base 브랜치 확인 완료 여부 |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|:----:|--------|------|
+| `title` | string | O | | 이슈 제목 |
+| `body` | string | | | 이슈 본문 |
+| `type` | string | | `feat` | 작업 유형 (feat, fix, refactor, docs, chore, test) |
+| `labels` | string | | | 라벨 (콤마 구분) |
+| `base` | string | | 자동 감지 | 분기 기준 브랜치 |
+| `confirmed` | boolean | | `false` | base 브랜치 확인 완료 여부 |
 
 **흐름:**
 1. GitHub 이슈 생성 (라벨 자동 매핑)
 2. base 브랜치에서 `{type}/issue-{번호}` 브랜치 생성
 3. 체크아웃
+
+**출력 예시:**
+
+```
+## 이슈 생성 완료
+
+이슈: #47 계정 중복 체크 기능 추가
+브랜치: feat/issue-47
+base: dev
+현재 브랜치: feat/issue-47
+```
 
 ---
 
@@ -88,14 +99,25 @@
 "이슈 42번 작업 시작해줘"
 ```
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|---------|------|:----:|------|
-| `issue` | number | O | GitHub 이슈 번호 |
-| `type` | string | | 브랜치 타입 (생략 시 이슈 라벨에서 자동 판단) |
-| `base` | string | | 분기 기준 브랜치 |
-| `confirmed` | boolean | | base 브랜치 확인 완료 여부 |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|:----:|--------|------|
+| `issue` | number | O | | GitHub 이슈 번호 |
+| `type` | string | | 라벨 자동 판단 | 브랜치 타입 |
+| `base` | string | | 자동 감지 | 분기 기준 브랜치 |
+| `confirmed` | boolean | | `false` | base 브랜치 확인 완료 여부 |
 
 > 이미 존재하는 브랜치면 체크아웃만 수행 (작업 재개).
+
+**출력 예시:**
+
+```
+## 작업 시작
+
+이슈: #42 출금 요청 잔액 부족 에러 처리
+브랜치: fix/issue-42 (신규 생성)
+base: dev
+현재 브랜치: fix/issue-42
+```
 
 ---
 
@@ -108,15 +130,25 @@
 "중복 체크 로직 추가 커밋해줘"  → 바로 커밋
 ```
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|---------|------|:----:|------|
-| `message` | string | | 커밋 메시지 (생략 시 diff 정보 제공) |
-| `type` | string | | 커밋 타입 (생략 시 브랜치명에서 추출) |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|:----:|--------|------|
+| `message` | string | | | 커밋 메시지 (생략 시 diff 정보 제공) |
+| `type` | string | | 브랜치명 추출 | 커밋 타입 |
 
 **자동 처리:**
 - 브랜치명 `feat/issue-42` → 커밋 타입 `feat`, 이슈 번호 `#42` 자동 추가
 - 스테이지 안 된 파일이 있으면 목록만 표시하고 `git add`를 안내
 - 커밋 메시지 포맷: `{type}: {message} #{issueNumber}`
+
+**출력 예시:**
+
+```
+## 커밋 완료
+
+커밋: feat: 계정 중복 체크 로직 추가 #47
+해시: a3f2c1d
+변경: 3 files changed, 52 insertions(+), 4 deletions(-)
+```
 
 ---
 
@@ -129,11 +161,11 @@ push + PR 생성. PR 템플릿 자동 적용, 이슈 자동 연결.
 "드래프트 PR 만들어줘"
 ```
 
-| 파라미터 | 타입 | 필수 | 설명 |
-|---------|------|:----:|------|
-| `title` | string | | PR 제목 (생략 시 이슈 제목 기반 자동 생성) |
-| `draft` | boolean | | Draft PR 생성 |
-| `base` | string | | PR 대상 브랜치 (생략 시 부모 브랜치 자동 감지) |
+| 파라미터 | 타입 | 필수 | 기본값 | 설명 |
+|---------|------|:----:|--------|------|
+| `title` | string | | 이슈 제목 기반 | PR 제목 |
+| `draft` | boolean | | `false` | Draft PR 생성 |
+| `base` | string | | 부모 브랜치 자동 감지 | PR 대상 브랜치 |
 
 **자동 생성 PR 본문:**
 - 개요 (이슈 연결)
@@ -144,6 +176,17 @@ push + PR 생성. PR 템플릿 자동 적용, 이슈 자동 연결.
 - 체크리스트
 - `closes #이슈번호` 자동 삽입
 
+**출력 예시:**
+
+```
+## PR 생성 완료
+
+PR #51: feat: 계정 중복 체크 기능 추가 #47
+URL: https://github.com/StableCoinTF/StableCoinBC_Adapter/pull/51
+base: dev ← feat/issue-47
+closes #47
+```
+
 ---
 
 ### `wf_status`
@@ -152,6 +195,29 @@ push + PR 생성. PR 템플릿 자동 적용, 이슈 자동 연결.
 
 ```
 "지금 작업 상태 보여줘"
+"현재 작업 중인 이슈 뭐야?"
+```
+
+파라미터 없음.
+
+**출력 예시:**
+
+```
+## 작업 상태
+
+브랜치: feat/issue-47
+이슈: #47 계정 중복 체크 기능 추가 [open]
+base: dev
+
+변경 파일: 3개
+- src/application/account/account.service.ts (M)
+- src/adapter/in/kafka/handlers/account-create.handler.ts (M)
+- src/domain/port/in/account.port.ts (M)
+
+커밋 이력 (1개):
+- feat: 계정 중복 체크 로직 추가 #47 (a3f2c1d)
+
+PR: 없음
 ```
 
 ---

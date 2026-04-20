@@ -47,6 +47,22 @@
 | `minutes` | number | | | 최근 N분 |
 | `size` | number | | `20` | 조회 건수 (최대 100) |
 
+**출력 예시:**
+
+```
+## 로그 검색 결과 (3건)
+
+쿼리: BUNDLER_BUILD_FAILED | 서비스: adapter | 레벨: error
+
+### 2026-04-20T09:58:12Z | adapter | ERROR
+requestId: req-001 | errorCode: BUNDLER_BUILD_FAILED
+빌더 트랜잭션 생성 실패: insufficient gas
+
+### 2026-04-20T09:55:30Z | adapter | ERROR
+requestId: req-002 | errorCode: BUNDLER_BUILD_FAILED
+빌더 응답 타임아웃 (5000ms)
+```
+
 ---
 
 ### `elk_trace`
@@ -96,6 +112,21 @@
 | `minutes` | number | | `360` | 분석 범위 (기본 6시간) |
 | `interval` | enum | | `1h` | `5m` `10m` `30m` `1h` `6h` `1d` |
 
+**출력 예시:**
+
+```
+## 에러 추이 (최근 6시간, 1h 단위)
+
+| 시간 | adapter | backend | listener |
+|------|---------|---------|---------|
+| 04:00 | 0 | 2 | 0 |
+| 05:00 | 3 | 1 | 0 |
+| 06:00 | 12 | 0 | 1 |
+| 07:00 | 8 | 0 | 0 |
+| 08:00 | 1 | 3 | 0 |
+| 09:00 | 0 | 1 | 0 |
+```
+
 ---
 
 ### `elk_error_summary`
@@ -104,12 +135,25 @@
 
 ```
 "지금 제일 많이 나는 에러가 뭐야?"
+"adapter 최근 1시간 에러 요약해줘"
 ```
 
 | 파라미터 | 타입 | 필수 | 기본값 | 설명 |
 |---------|------|:----:|--------|------|
 | `service` | string | | | 서비스 필터 |
 | `minutes` | number | | `60` | 분석 범위 |
+
+**출력 예시:**
+
+```
+## 에러 요약 (최근 1시간)
+
+| 에러코드 | 횟수 | 서비스 | 마지막 발생 | 메시지 샘플 |
+|---------|------|--------|------------|------------|
+| BUNDLER_BUILD_FAILED | 12 | adapter | 09:58 | insufficient gas |
+| INSUFFICIENT_BALANCE | 5 | adapter | 09:45 | balance 0 < amount 1000 |
+| KAFKA_TIMEOUT | 3 | listener | 09:30 | consumer group lag |
+```
 
 ---
 
@@ -119,6 +163,22 @@
 
 ```
 "ES 인덱스 목록 보여줘"
+"어떤 인덱스들이 있어?"
+```
+
+파라미터 없음.
+
+**출력 예시:**
+
+```
+## Elasticsearch 인덱스 목록
+
+| 인덱스 | 상태 | 문서 수 | 크기 |
+|--------|------|---------|------|
+| logs-adapter-2026.04.20 | green | 142,831 | 245MB |
+| logs-backend-2026.04.20 | green | 89,201 | 158MB |
+| logs-listener-2026.04.20 | green | 23,541 | 42MB |
+| logs-adapter-2026.04.19 | green | 521,234 | 912MB |
 ```
 
 ---
