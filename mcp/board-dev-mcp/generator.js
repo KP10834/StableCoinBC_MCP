@@ -125,7 +125,7 @@ export function solidityToTs(type) {
 
 export function extractPortMethods(portContent) {
   const methods = new Set();
-  const regex = /^\s{2}(\w+)\s*\(/gm;
+  const regex = /^\s+(\w+)\s*\(/gm;
   let match;
   while ((match = regex.exec(portContent)) !== null) {
     methods.add(match[1]);
@@ -158,6 +158,7 @@ export function generateMethodSnippet(fn) {
   const adapterMethod = [
     `  async ${fn.name}(${params}): Promise<${retType}> {`,
     `    try {`,
+    `      // TODO: RPC 메서드명을 확인하세요 (예: "eth_${fn.name}", "txpool_status" 등)`,
     `      const result = await this.provider.send("${fn.name}", [${fn.inputs.map((i) => i.name || '_').join(', ')}]);`,
     `      return result as ${retType};`,
     `    } catch (error) {`,
