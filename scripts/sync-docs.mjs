@@ -9,7 +9,8 @@
  *   npm run sync-docs -- --asyncapi /path/to/asyncapi.yaml     # asyncapi 경로 지정
  */
 import { readFileSync, writeFileSync, readdirSync, existsSync } from "fs";
-import { resolve, basename } from "path";
+import { resolve, basename, dirname } from "path";
+import { execSync } from "child_process";
 import { parse, stringify } from "yaml";
 
 function getArg(flag) {
@@ -33,6 +34,7 @@ function loadConfig() {
     handlersDir: resolve(projectRoot, pkgConfig.handlersDir || "src/adapter/in/kafka/handlers"),
     envPath: resolve(projectRoot, pkgConfig.envPath || "src/infra/config/env.ts"),
     asyncapiPath: resolve(projectRoot, getArg("--asyncapi") || pkgConfig.asyncapiPath || "../StableCoinBC_Adapter_Docs/asyncapi.yaml"),
+    docsRepo: pkgConfig.docsRepo || null,
   };
 }
 
@@ -41,6 +43,7 @@ const PROJECT_ROOT = config_.projectRoot;
 const HANDLERS_DIR = config_.handlersDir;
 const ENV_PATH = config_.envPath;
 const ASYNCAPI_PATH = config_.asyncapiPath;
+const DOCS_REPO = config_.docsRepo;
 
 const FIX_MODE = process.argv.includes("--fix");
 
@@ -49,8 +52,24 @@ if (!existsSync(HANDLERS_DIR)) {
   process.exit(1);
 }
 if (!existsSync(ASYNCAPI_PATH)) {
-  console.error(`ERROR: asyncapi.yaml 없음: ${ASYNCAPI_PATH}\n\npackage.json에 syncDocs.asyncapiPath를 설정하세요:\n${JSON.stringify({ syncDocs: { asyncapiPath: "../YourDocsRepo/asyncapi.yaml" } }, null, 2)}`);
-  process.exit(1);
+  const docsDir = dirname(ASYNCAPI_PATH);
+  if (!existsSync(docsDir) && DOCS_REPO) {
+    console.log(`\nDocs 레포 없음 — 자동 클론: ${DOCS_REPO}`);
+    console.log(`클론 경로: ${docsDir}\n`);
+    try {
+      execSync(`git clone https://github.com/${DOCS_REPO}.git "${docsDir}"`, { stdio: "inherit" });
+      console.log("\n클론 완료\n");
+    } catch (e) {
+      console.error(`ERROR: 클론 실패 — ${e.message}`);
+      process.exit(1);
+    }
+  } else {
+    console.error(`ERROR: asyncapi.yaml 없음: ${ASYNCAPI_PATH}`);
+    if (!DOCS_REPO) {
+      console.error(`\npackage.json에 syncDocs.docsRepo를 설정하면 자동 클론됩니다:\n${JSON.stringify({ syncDocs: { docsRepo: "org/repo-name", asyncapiPath: "../repo-name/asyncapi.yaml" } }, null, 2)}`);
+    }
+    process.exit(1);
+  }
 }
 
 // ─── 1. 코드에서 토픽명 추출 ────────────────────────────────

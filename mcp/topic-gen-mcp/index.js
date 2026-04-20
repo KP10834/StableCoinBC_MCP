@@ -19,10 +19,10 @@ import {
 
 const BOARD_DIR = process.env.BOARD_DIR || '';
 
-const server = new McpServer({ name: 'board-dev-mcp', version: '1.0.0' });
+const server = new McpServer({ name: 'topic-gen-mcp', version: '1.0.0' });
 
 server.tool(
-  'board_gen_topic',
+  'topic_gen',
   'Kafka 토픽 스켈레톤 생성 (port/service/handler + index.ts, env.ts 수정)',
   {
     topic_key: z.string().describe('camelCase 토픽 키 (예: networkInquiry)'),
@@ -98,7 +98,7 @@ server.tool(
 );
 
 server.tool(
-  'board_check_abi',
+  'topic_abi_check',
   'ABI JSON과 ChainReaderPort 비교 — 누락/변경된 메서드 및 구현 스니펫 제안',
   {
     abi_path: z.string().describe('ABI JSON 파일 절대 경로 (StableCoin_ERC4337 레포 내)'),

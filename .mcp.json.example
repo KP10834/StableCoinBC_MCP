@@ -51,10 +51,13 @@
       "command": "node",
       "args": ["node_modules/@stablecointf/mcp-servers/mcp/workflow-mcp/index.js"]
     },
-    "release-note-mcp": {
+    "topic-gen-mcp": {
       "type": "stdio",
       "command": "node",
-      "args": ["node_modules/@stablecointf/mcp-servers/mcp/release-note-mcp/index.js"]
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/topic-gen-mcp/index.js"],
+      "env": {
+        "BOARD_DIR": "/absolute/path/to/StableCoinBC_Adapter_Board"
+      }
     },
     "qa-mcp": {
       "type": "stdio",

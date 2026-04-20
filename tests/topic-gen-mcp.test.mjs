@@ -13,7 +13,7 @@ import {
   solidityToTs,
   extractPortMethods,
   diffAbiVsPort,
-} from '../mcp/board-dev-mcp/generator.js';
+} from '../mcp/topic-gen-mcp/generator.js';
 
 test('toPascalCase', () => {
   assert.equal(toPascalCase('networkInquiry'), 'NetworkInquiry');

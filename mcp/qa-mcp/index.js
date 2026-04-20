@@ -421,6 +421,24 @@ function exec(cmd, cwd, timeoutMs = 60000) {
   }
 }
 
+// ─── tsc 에러 파싱 ──────────────────────────────────────────────
+
+function parseTscErrors(output) {
+  const errors = [];
+  const pattern = /^(.+)\((\d+),(\d+)\): error (TS\d+): (.+)$/gm;
+  let match;
+  while ((match = pattern.exec(output)) !== null) {
+    errors.push({
+      file: match[1].trim(),
+      line: parseInt(match[2]),
+      column: parseInt(match[3]),
+      code: match[4],
+      message: match[5].trim(),
+    });
+  }
+  return errors;
+}
+
 async function kafkaPublish(topic, message, key) {
   const producer = kafka.producer();
   await producer.connect();
@@ -1023,6 +1041,114 @@ server.tool(
         text: `## ${branch} 테스트 ${pipelineOk ? "성공" : "실패"}\n\n${report.join("\n")}`,
       }],
     };
+  },
+);
+
+server.tool(
+  "qa_refactor_check",
+  "현재 브랜치의 변경 파일과 diff를 반환 — Claude가 리팩토링 제안에 사용",
+  {
+    base: z.string().optional().describe("비교 기준 브랜치 (기본: BASE_BRANCH 환경변수)"),
+  },
+  async ({ base }) => {
+    const baseBranch = base || detectParentBranch();
+    const changedFiles = getChangedFiles(baseBranch);
+
+    if (changedFiles.length === 0) {
+      return { content: [{ type: "text", text: `변경된 파일이 없습니다. (기준: ${baseBranch})` }] };
+    }
+
+    const files = [];
+    for (const file of changedFiles) {
+      const absPath = resolve(PROJECT_DIR, file);
+      if (!existsSync(absPath)) continue;
+
+      const content = readFileSync(absPath, "utf-8");
+      const diffResult = exec(`git diff ${baseBranch} -- ${file}`, PROJECT_DIR, 10000);
+      files.push({
+        path: file,
+        content,
+        diff: diffResult.ok ? diffResult.output : "",
+      });
+    }
+
+    const lines = [
+      `## 변경 파일 목록 (기준: ${baseBranch})\n`,
+      `총 ${files.length}개 파일\n`,
+    ];
+
+    for (const f of files) {
+      lines.push(`### ${f.path}\n`);
+      lines.push("**diff:**");
+      lines.push("```diff");
+      lines.push(f.diff || "(diff 없음)");
+      lines.push("```\n");
+      lines.push("**전체 내용:**");
+      lines.push("```typescript");
+      lines.push(f.content);
+      lines.push("```\n");
+    }
+
+    return { content: [{ type: "text", text: lines.join("\n") }] };
+  },
+);
+
+server.tool(
+  "qa_lint_fix",
+  "eslint --fix 자동 수정 실행 후 tsc 타입 에러 반환",
+  {},
+  async () => {
+    const lines = ["## 린트 & 타입 검사 결과\n"];
+
+    // 1. eslint --fix
+    const eslintResult = exec("npx eslint --fix src/", PROJECT_DIR, 60000);
+
+    lines.push("### ESLint");
+    if (eslintResult.ok || eslintResult.output) {
+      if (eslintResult.output) {
+        lines.push("```");
+        lines.push(eslintResult.output.slice(-2000));
+        lines.push("```\n");
+      } else {
+        lines.push("자동 수정 완료 (에러 없음)\n");
+      }
+    } else {
+      lines.push("```");
+      lines.push((eslintResult.error || "").slice(-2000));
+      lines.push("```\n");
+    }
+
+    // 2. tsc --noEmit
+    const tscResult = exec("npx tsc --noEmit", PROJECT_DIR, 120000);
+    lines.push("### TypeScript 타입 검사");
+
+    if (tscResult.ok) {
+      lines.push("타입 에러 없음 ✅\n");
+      return { content: [{ type: "text", text: lines.join("\n") }] };
+    }
+
+    const rawOutput = (tscResult.output || "") + (tscResult.error || "");
+    const errors = parseTscErrors(rawOutput);
+
+    if (errors.length === 0) {
+      lines.push("```");
+      lines.push(rawOutput.slice(-3000));
+      lines.push("```\n");
+    } else {
+      lines.push(`\n총 ${errors.length}개 타입 에러:\n`);
+      lines.push("| 파일 | 라인 | 코드 | 메시지 |");
+      lines.push("| --- | ---: | --- | --- |");
+      for (const e of errors) {
+        lines.push(`| ${e.file} | ${e.line} | ${e.code} | ${e.message} |`);
+      }
+
+      lines.push("\n### 에러 상세\n");
+      lines.push("```");
+      lines.push(rawOutput.slice(-4000));
+      lines.push("```");
+    }
+
+    return { content: [{ type: "text", text: lines.join("\n") }] };
   },
 );
 
