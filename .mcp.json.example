@@ -100,6 +100,17 @@
         "WIKI_PULL_TTL_SEC": "300"
       }
     },
+    "dooray-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/dooray-mcp/index.js"],
+      "env": {
+        "DOORAY_API_URL": "https://api.dooray.com",
+        "DOORAY_TOKEN": "<your-dooray-api-token>",
+        "DOORAY_DEFAULT_PROJECT_ID": "",
+        "DOORAY_DEFAULT_CHANNEL_ID": ""
+      }
+    },
     "slack-mcp": {
       "type": "stdio",
       "command": "node",

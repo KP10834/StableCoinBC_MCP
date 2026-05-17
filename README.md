@@ -15,7 +15,7 @@ Claude Code 채팅창에서 자연어로 인프라를 조회하고, 테스트를
 │  │   kafka / redis / sqlite / evm / elk  ← 인프라 조회        │  │
 │  │   grafana / kibana                     ← 모니터링 (UI 프록시) │  │
 │  │   workflow / qa / cross-impact         ← 개발 자동화        │  │
-│  │   slack                                ← 메시징/알림        │  │
+│  │   slack / dooray                       ← 메시징/협업        │  │
 │  │   github-wiki                          ← Wiki 조회/편집     │  │
 │  │   topic-gen                            ← 스캐폴딩         │  │
 │  │   context7 (외부)                      ← 라이브러리 문서    │  │
@@ -131,6 +131,12 @@ npx mcp-setup --commands   # 슬래시 커맨드만 갱신
         "GITHUB_TOKEN": "ghp_xxxx",
         "WIKI_REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\"}"
       }
+    },
+    "dooray-mcp": {
+      "env": {
+        "DOORAY_TOKEN": "your-dooray-api-token",
+        "DOORAY_DEFAULT_PROJECT_ID": "3000000000000000000"
+      }
     }
   }
 }
@@ -173,7 +179,9 @@ StableCoinBC_MCP/
 │   ├── workflow-mcp/          ─┐
 │   ├── qa-mcp/                 ├─ 개발 자동화
 │   ├── cross-impact-mcp/      ─┘
-│   ├── slack-mcp/             ── 메시징/알림
+│   ├── slack-mcp/             ─┐
+│   ├── dooray-mcp/             ├─ 메시징/협업 (업무·메신저)
+│   │                          ─┘
 │   ├── github-wiki-mcp/       ── GitHub Wiki 조회/편집
 │   └── topic-gen-mcp/         ── 스캐폴딩 / ABI 동기화
 │
@@ -294,6 +302,7 @@ Claude Code 채팅창에서 자연어로 요청하면 자동으로 해당 도구
 | `cross-impact-mcp` | 멀티 레포 변경 영향 분석 | `GITHUB_TOKEN`, `REPOS` | [docs](mcp/cross-impact-mcp/README.md) |
 | `topic-gen-mcp` | Kafka 토픽 스켈레톤 생성, ABI↔ChainReader 동기화 | `BOARD_DIR` | [docs](mcp/topic-gen-mcp/README.md) |
 | `slack-mcp` | 메시지 발송, 채널/스레드 조회, 메시지 검색 | `SLACK_BOT_TOKEN`, `SLACK_USER_TOKEN` | [docs](mcp/slack-mcp/README.md) |
+| `dooray-mcp` | 두레이 업무(Project) CRUD + 댓글 + 메신저 채널 발송/조회 | `DOORAY_TOKEN` | [docs](mcp/dooray-mcp/README.md) |
 | `github-wiki-mcp` | GitHub Wiki 조회/검색/생성/갱신 (git 기반, 자동 commit+push) | `GITHUB_TOKEN`, `WIKI_REPOS` | [docs](mcp/github-wiki-mcp/README.md) |
 
 #### cross-impact-mcp REPOS 설정
