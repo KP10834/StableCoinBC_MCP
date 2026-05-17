@@ -90,6 +90,16 @@
         "KIBANA_COOKIE": ""
       }
     },
+    "github-wiki-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/github-wiki-mcp/index.js"],
+      "env": {
+        "GITHUB_TOKEN": "<your-github-token>",
+        "WIKI_REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\"}",
+        "WIKI_PULL_TTL_SEC": "300"
+      }
+    },
     "slack-mcp": {
       "type": "stdio",
       "command": "node",

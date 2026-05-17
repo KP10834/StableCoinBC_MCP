@@ -16,6 +16,7 @@ Claude Code 채팅창에서 자연어로 인프라를 조회하고, 테스트를
 │  │   grafana / kibana                     ← 모니터링 (UI 프록시) │  │
 │  │   workflow / qa / cross-impact         ← 개발 자동화        │  │
 │  │   slack                                ← 메시징/알림        │  │
+│  │   github-wiki                          ← Wiki 조회/편집     │  │
 │  │   topic-gen                            ← 스캐폴딩         │  │
 │  │   context7 (외부)                      ← 라이브러리 문서    │  │
 │  └────────────────────────────────────────────────────────┘  │
@@ -124,6 +125,12 @@ npx mcp-setup --commands   # 슬래시 커맨드만 갱신
         "KIBANA_URL": "https://kibana.company.com",
         "KIBANA_API_KEY": "xxxx"
       }
+    },
+    "github-wiki-mcp": {
+      "env": {
+        "GITHUB_TOKEN": "ghp_xxxx",
+        "WIKI_REPOS": "{\"adapter\":\"StableCoinTF/StableCoinBC_Adapter\"}"
+      }
     }
   }
 }
@@ -167,6 +174,7 @@ StableCoinBC_MCP/
 │   ├── qa-mcp/                 ├─ 개발 자동화
 │   ├── cross-impact-mcp/      ─┘
 │   ├── slack-mcp/             ── 메시징/알림
+│   ├── github-wiki-mcp/       ── GitHub Wiki 조회/편집
 │   └── topic-gen-mcp/         ── 스캐폴딩 / ABI 동기화
 │
 ├── commands/                  ← Slash Command 정의 (.md)
@@ -286,6 +294,7 @@ Claude Code 채팅창에서 자연어로 요청하면 자동으로 해당 도구
 | `cross-impact-mcp` | 멀티 레포 변경 영향 분석 | `GITHUB_TOKEN`, `REPOS` | [docs](mcp/cross-impact-mcp/README.md) |
 | `topic-gen-mcp` | Kafka 토픽 스켈레톤 생성, ABI↔ChainReader 동기화 | `BOARD_DIR` | [docs](mcp/topic-gen-mcp/README.md) |
 | `slack-mcp` | 메시지 발송, 채널/스레드 조회, 메시지 검색 | `SLACK_BOT_TOKEN`, `SLACK_USER_TOKEN` | [docs](mcp/slack-mcp/README.md) |
+| `github-wiki-mcp` | GitHub Wiki 조회/검색/생성/갱신 (git 기반, 자동 commit+push) | `GITHUB_TOKEN`, `WIKI_REPOS` | [docs](mcp/github-wiki-mcp/README.md) |
 
 #### cross-impact-mcp REPOS 설정
 
