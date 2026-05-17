@@ -99,7 +99,7 @@ ERC20 토큰 잔액 조회. `decimals`, `symbol`, `name` 자동 표시.
 ## 트랜잭션 조회
 
 해시: 0xabcd...1234
-상태: ✅ SUCCESS
+상태: SUCCESS
 블록: 18,542,300
 from: 0x1111...
 to: 0x2222...

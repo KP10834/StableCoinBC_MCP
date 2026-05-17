@@ -69,6 +69,37 @@
       "command": "npx",
       "args": ["-y", "@upstash/context7-mcp"]
     },
+    "grafana-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/grafana-mcp/index.js"],
+      "env": {
+        "GRAFANA_URL": "https://grafana.company.com",
+        "GRAFANA_SA_TOKEN": "<glsa-your-service-account-token>",
+        "GRAFANA_PROM_DATASOURCE_UID": "",
+        "GRAFANA_LOKI_DATASOURCE_UID": ""
+      }
+    },
+    "kibana-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/kibana-mcp/index.js"],
+      "env": {
+        "KIBANA_URL": "https://kibana.company.com",
+        "KIBANA_API_KEY": "<your-kibana-api-key>",
+        "KIBANA_COOKIE": ""
+      }
+    },
+    "slack-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["node_modules/@stablecointf/mcp-servers/mcp/slack-mcp/index.js"],
+      "env": {
+        "SLACK_BOT_TOKEN": "<xoxb-your-bot-token>",
+        "SLACK_USER_TOKEN": "<xoxp-your-user-token-optional>",
+        "SLACK_DEFAULT_CHANNEL": ""
+      }
+    },
     "cross-impact-mcp": {
       "type": "stdio",
       "command": "node",
